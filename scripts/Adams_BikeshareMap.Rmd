@@ -1,0 +1,132 @@
+---
+title: "In Class Exercise: 18-10-2023"
+name: "Lucas, Ryan, Sean"
+date: "18-10-2023"
+output: html_notebook
+---
+
+# Loading Packages
+```{r}
+library(tidyverse)
+library(dplyr)
+library(sf)
+library(janitor)
+library(here)
+```
+
+# Loading Data
+```{r}
+bikeshare_sept23 <- read.csv(here("data_raw", "202309-capitalbikeshare-tripdata.csv"))
+```
+
+# Slicing off first 10000 points to examine
+```{r}
+bikeshare_sept2302 = bikeshare_sept23  |>
+  slice(1:100000) 
+```
+
+# Plotting Points on standard grid
+```{r}
+  ggplot(bikeshare_sept2302, mapping = aes(x = start_lng, y = start_lat))+
+  geom_point()
+```
+
+# Preparing points for map plotting
+```{r}
+points = st_as_sf(bikeshare_sept2302, coords = c("start_lng", "start_lat"), crs = 4326)
+plot(st_geometry(points), pch = 16, col = "navy")
+```
+
+# Plotting all points on the D.C. map
+```{r}
+library(OpenStreetMap)
+
+upperLeft = c(39.12, -77.38)
+
+lowerRight = c(38.77, -76.86)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col="navy", cex=0.5, add=T)
+```
+# Separating timestamps to access hour
+```{r}
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  separate(started_at, into = c("start_date", "start_time"), sep = 10, remove = FALSE)
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  separate(ended_at, into = c("end_date", "end_time"), sep = 10, remove = FALSE)
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  separate(start_time, into = c("start_hour", "start_inhour"), sep = 3, remove = FALSE)
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  separate(end_time, into = c("end_hour", "end_inhour"), sep = 3, remove = FALSE)
+```
+
+# Mutating a new variable to turn string segment into a numeric value
+```{r}
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  mutate(begin_hr = case_when(
+    start_hour == " 01" ~ 01,
+    start_hour == " 02" ~ 02,
+    start_hour == " 03" ~ 03,
+    start_hour == " 04" ~ 04,
+    start_hour == " 05" ~ 05,
+    start_hour == " 06" ~ 06,
+    start_hour == " 07" ~ 07,
+    start_hour == " 08" ~ 08,
+    start_hour == " 09" ~ 09,
+    start_hour == " 10" ~ 10,
+    start_hour == " 11" ~ 11,
+    start_hour == " 12" ~ 12,
+    start_hour == " 13" ~ 13,
+    start_hour == " 14" ~ 14,
+    start_hour == " 15" ~ 15,
+    start_hour == " 16" ~ 16,
+    start_hour == " 17" ~ 17,
+    start_hour == " 18" ~ 18,
+    start_hour == " 19" ~ 19,
+    start_hour == " 20" ~ 20,
+    start_hour == " 21" ~ 21,
+    start_hour == " 22" ~ 22,
+    start_hour == " 23" ~ 23,
+    start_hour == " 00" ~ 00
+  ))
+```
+
+# Grouping hours into morning and afternoon
+```{r}
+bikeshare_sept2302 <- bikeshare_sept2302 %>%
+  mutate(tod = case_when(
+  begin_hr %in% c(0,1,2,3,4,5) ~ 1,
+  begin_hr %in% c(6,7,8,9,10,11) ~ 2,
+  begin_hr %in% c(12,13,14,15,16,17) ~ 3,
+  begin_hr %in% c(18,19,20,21,22,23) ~ 4
+    ))
+```
+
+# Preparing points to be plotted again
+```{r}
+points = st_as_sf(bikeshare_sept2302, coords = c("start_lng", "start_lat"), crs = 4326)
+plot(st_geometry(points), pch = 16, col = "navy")
+```
+# Plotting points again on D.C. map, this time distinguishing them by color, where red is morning and black is afternoon.
+```{r}
+palette = c("red", "black", "blue", "green")
+
+names(palette) = unique(points$tod)
+
+upperLeft = c(39.13, -77.38)
+
+lowerRight = c(38.77, -76.84)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col=palette[points$tod], cex=0.5, add=T)
+```
