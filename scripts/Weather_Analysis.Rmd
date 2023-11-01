@@ -1,0 +1,58 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(dplyr)
+library(openmeteo)
+library(rwunderground)
+```
+
+
+```{r}
+weather_now("Montreal")
+```
+
+```{r}
+weather_now("Washington")
+```
+
+```{r}
+weather_forecast("nyc",
+hourly = c("temperature_2m", "precipitation"),
+response_units = list(
+  temperature_unit = "fahrenheit",
+precipitation_unit = "inch"
+))
+```
+
+```{r}
+weather_forecast("Washington",
+hourly = c("temperature_2m", "precipitation"),
+response_units = list(
+  temperature_unit = "fahrenheit",
+precipitation_unit = "inch"
+))
+```
+
+# Historical Data
+```{r}
+weather_history("London",
+start = "2020-01-01",
+end = "2021-12-31",
+hourly = "cloudcover"
+)
+```
+
+```{r}
+df1 = weather_history("Washington",
+start = "2023-09-01",
+end = "2023-09-30",
+hourly = c("apparent_temperature", "wind_speed_10m", "precipitation", "rain")
+)
+```
+
