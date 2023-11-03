@@ -1,0 +1,45 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(here)
+library(janitor)
+library(openmeteo)
+```
+
+# Loading Data
+```{r}
+df1 = read_csv(here("data_raw", "202309-capitalbikeshare-tripdata.csv"))
+```
+
+```{r}
+df2s=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("start"),ride_id) %>% 
+  mutate(start_stop="start") %>%
+  rename(t=started_at,
+         station_name=start_station_name,
+         station_id=start_station_id,
+         lat=start_lat,
+         lng=start_lng)
+```
+
+```{r}
+df2e=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("end"),ride_id) %>% 
+  mutate(start_stop="stop") %>%
+  rename(t=ended_at,
+         station_name=end_station_name,
+         station_id=end_station_id,
+         lat=end_lat,
+         lng=end_lng)
+```
+
+```{r}
+df2 = bind_rows(df2s, df2e)
+```
+
