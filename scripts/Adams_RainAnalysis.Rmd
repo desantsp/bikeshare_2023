@@ -67,3 +67,9 @@ df2 %>%
   ggplot(aes(t,riders)) + geom_line() + ggtitle("Riders on September 18th")
 ```
 
+# Daily ridership
+```{r}
+df2 %>% filter(month(t) == 9) %>%
+  ggplot(aes(t,riders)) + geom_line() + facet_wrap(~mday(t), scales = "free_x", ncol = 7) + ggtitle("Riders by Day of the Month")
+```
+
