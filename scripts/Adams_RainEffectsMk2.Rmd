@@ -127,3 +127,21 @@ df_w=weather_history("Washington",
 )
 ```
 
+```{r}
+    df_sb=df2 %>% slice_sample(n=1000)
+```
+```{r}
+    df_j=df_sb %>% left_join(df_w,
+                        by=join_by(closest(t>=datetime)))
+```
+```{r}
+    df_j=df_sb %>% 
+  left_join(df_w,by=join_by(closest(t>=datetime)))  %>%
+  relocate(datetime, .after=t)
+head(df_j)
+```
+```{r}
+df_j$t[1:5]
+df_j$datetime[1:5]
+```
+
