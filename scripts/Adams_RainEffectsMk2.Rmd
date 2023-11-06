@@ -58,3 +58,72 @@ df2 = df2 %>%
 df2 %>%
   ggplot(aes(t,riders)) + geom_line() + ggtitle("Riders in September")
 ```
+
+# Subsampled dataset
+```{r}
+df_s = df2 %>% slice_head(n = 1000)
+```
+
+```{r}
+df_e = df_s %>%
+  mutate(t_f = floor_date(t, "10 mins")) %>%
+  relocate(t_f, .after = t) %>%
+  slice_head(n = 1, by = t_f)
+```
+
+# Applying formula to entire dataset and reducing
+```{r}
+df_r=df2 |>
+  mutate(t_f=floor_date(t,"10 mins")) %>%
+  relocate(t_f,.after=t) %>%
+  slice_head(n=1,by=t_f)
+```
+
+```{r}
+p1=df2 %>% 
+  filter(day(t)==18) %>%
+  ggplot(aes(t,riders)) +
+  geom_line() +
+  ggtitle("Riders on 18Sep")
+```
+
+```{r}
+p1+
+  geom_line(data=df_r %>% filter(day(t)==18),
+  color="red")
+```
+
+# Spacing every 1 minute
+```{r}
+df_rb=df2 |>
+  mutate(t_f=floor_date(t,"1 mins")) %>%
+  relocate(t_f,.after=t) %>%
+  slice_head(n=1,by=t_f)
+
+```
+
+```{r}
+p3=df2 %>% 
+  filter(day(t)==18) %>%
+  ggplot(aes(t,riders)) +
+  geom_line() +
+  ggtitle("Riders on 18Sep")
+```
+
+```{r}
+p3+
+  geom_line(data=df_rb %>% filter(day(t)==18),
+  color="red")
+```
+
+# Start of Weather data manipulation
+```{r}
+df_w=weather_history("Washington",
+                    start = "2023-09-01",
+                    end = "2023-09-30",
+                    hourly = c("apparent_temperature",
+                               "wind_speed_10m",
+                               "precipitation")
+)
+```
+
