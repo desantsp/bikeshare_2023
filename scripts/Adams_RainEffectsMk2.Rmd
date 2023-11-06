@@ -1,0 +1,60 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+library(openmeteo)
+```
+
+# Loading bikeshare data
+```{r}
+df1=read_csv(here("data_raw","202309-capitalbikeshare-tripdata.csv"))
+```
+
+```{r}
+df2s=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("start"),ride_id) %>% 
+  mutate(start_stop="start") %>%
+  rename(t=started_at,
+         station_name=start_station_name,
+         station_id=start_station_id,
+         lat=start_lat,
+         lng=start_lng)
+```
+
+# Creating dataframe for ride ends
+```{r}
+df2e=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("end"),ride_id) %>% 
+  mutate(start_stop="stop") %>%
+  rename(t=ended_at,
+         station_name=end_station_name,
+         station_id=end_station_id,
+         lat=end_lat,
+         lng=end_lng)
+```
+
+# Merging rows of start and end dfs
+```{r}
+df2 = bind_rows(df2s, df2e)
+```
+
+
+```{r}
+df2 = df2 %>%
+  arrange(t) %>%
+  mutate(rider_delta =(start_stop == "start")*2-1) %>%
+  mutate(riders=cumsum(rider_delta)) %>%
+  relocate(t,start_stop,riders, .after = rideable_type)
+```
+
+```{r}
+df2 %>%
+  ggplot(aes(t,riders)) + geom_line() + ggtitle("Riders in September")
+```
