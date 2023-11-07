@@ -55,6 +55,10 @@ df2 = df2 %>%
 ```
 
 ```{r}
+df2 = force_tz(df2, tzone = "America/New_York")
+```
+
+```{r}
 df2 %>%
   ggplot(aes(t,riders)) + geom_line() + ggtitle("Riders in September")
 ```
@@ -140,6 +144,7 @@ df_w=weather_history("Washington",
   relocate(datetime, .after=t)
 head(df_j)
 ```
+
 ```{r}
 df_j$t[1:5]
 df_j$datetime[1:5]
