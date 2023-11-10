@@ -169,3 +169,17 @@ left_join(df_w, by=join_by(closest(t>=datetime))) %>%
          wind = hourly_wind_speed_10m,
          prec = hourly_precipitation)
 ```
+
+
+```{r}
+dfc %>%
+  ggplot(aes(t,atemp)) + geom_line() + ggtitle("Temperatures in September")
+```
+
+```{r}
+p2 = dfc %>%
+  filter(day(t) == 23) %>%
+  ggplot(aes(t,riders, color = wind)) + geom_point()
+p2
+```
+
