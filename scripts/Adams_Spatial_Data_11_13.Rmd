@@ -56,13 +56,13 @@ https://opendata.dc.gov/datasets/DCGIS::dc-health-planning-neighborhoods/about
 
 Load the neighborhood geospatial data as `neigh`.
 ```{r}
-
+neigh = st_read(here("data_raw", "DC_Health_Planning_Neighborhoods.geojson")) %>% clean_names()
 ```
 
 Ensure it plots.
 
 ```{r}
-
+plot(neigh)
 ```
 
 
@@ -73,13 +73,15 @@ Download the DC covid datase for positive cases and store at an appropriate plac
 Read the data as `df_c` and be sure to clean names.
 
 ```{r}
-
+df_c = read_csv(here("data_raw", "DC_COVID-19_Total_Positive_Cases_by_Neighborhood.csv")) %>% clean_names()
 ```
 
 Now - let's focus on a particular date (for no reason other than simplifying our analysis).
 
 ```{r}
-
+df_cases = df_c %>%
+  filter(as_date(date_reported) == "2021-11-17") %>%
+  separate(neighborhood, into=c("code", "name"), sep = ":")
 ```
 
 
@@ -92,35 +94,43 @@ df_cases=df_c %>%
   mutate(code=case_when(code=="N35" ~"N0",
                         TRUE ~ code)) %>%
   select(-date_reported)
-  
-  
 ```
 
 ## Regular joining (of dataframes)
 
 Join the dataframes and make a chloropleth map using tmap.
+```{r}
+neigh2 = left_join(neigh, df_cases, by = c("code"))
+
+tmap_mode("view")
+
+tm_shape(neigh2) + tm_polygons("total_positives", alpha = 0.5)
+```
+
 
 ## Joining with other spatial data
 
 Let's get some data using `tidycensus`.  Need an API key   https://api.census.gov/data/key_signup.html
 
 ```{r}
-census_api_key("YOUR KEY HERE")
+census_api_key("fd79001f8e491bb60620a3e5dfeb02656d0af22e")
 
 ```
 
  What data is available --- and what is the variable name?
- 
+
  (We are interested in the 5year American Community Survey.)
 
 ```{r}
-
+#what variables
+v20 = load_variables(2018, "acs5")
+#Variables include "Sex by Age" (B01001 variables), Race (B02001), and "People Recording Single Ancestry" (B04004), amongst others.
 ```
 
 Get some data:
 
 ```{r}
-df_cencus=get_acs(geography = "tract",
+df_census=get_acs(geography = "tract",
                   variables=c("median_inc"="B06011_001",
                               "pop"="B01001_001",
                               "pop_black"="B02009_001"),
@@ -130,7 +140,7 @@ df_cencus=get_acs(geography = "tract",
 Make a plot to verify that you read the data:
 
 ```{r}
-
+plot(df_census)
 ```
 
 
@@ -139,7 +149,7 @@ Make a plot to verify that you read the data:
 It's in long format.  Let's make it wide.
 
 ```{r}
-df_cens=df_cencus %>% 
+df_cens=df_census %>% 
   select(-moe) %>% 
   pivot_wider(names_from = "variable", 
               values_from = "estimate")
@@ -171,19 +181,17 @@ df_j=st_join(df_cens,neigh2)
 You need to add a coordinate system to the census data:
 
 ```{r}
-
+df_cens_adj = df_cens %>% st_transform(4326)
 ```
-
-
 
 But which way do we join --- and --- think about how it should "aggregate" the data.
 
 ```{r}
-
+df_j = st_join(df_cens_adj, neigh2, largest = TRUE)
 ```
 
 ```{r}
-
+df_j_rev = st_join(neigh2, df_cens_adj, largest = TRUE)
 ```
 
 Since we want the geometry for the NEIGHBORHOODS, we need a different work a little harder:
@@ -202,7 +210,7 @@ plot(df1)
 Now that we are aggregating in the right way, we can join.
 
 ```{r}
-df2=left_join(neigh2,df1)
+#df2=left_join(neigh2,df1)
 
 df2=left_join(neigh2,df1 %>% st_set_geometry(NULL))
 
@@ -218,5 +226,6 @@ tm_shape(df2)+tm_polygons(c("adj_median_income","covid_rate","black_perc"))
 Improve that visualization:
 
 ```{r}
-
+df2 %>% filter(code!="N0") %>%
+  tm_shape() + tm_polygons(c("adj_median_income", "covid_rate", "black_perc"), alpha = .4)
 ```
