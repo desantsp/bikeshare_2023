@@ -1,8 +1,12 @@
 ---
 title: "Replacement Class - Introduction to spatial data"
-date:  "2023-11-13"
 author: "Lucas Adams"
-output: html_notebook
+date: "2023-11-13"
+output:
+  html_document:
+    df_print: paged
+  html_notebook: default
+  pdf_document: default
 ---
 
 This notebook supports an asynchronous lecture meant to introduce you to some basics of spatial data.  The lecture will be provided via Echo360.
@@ -171,12 +175,6 @@ Consider this problem:
 ```
 
 OK - follow the challenging code elements:
-
-```{r}
-
-df_j=st_join(df_cens,neigh2)
-
-```
 
 You need to add a coordinate system to the census data:
 
