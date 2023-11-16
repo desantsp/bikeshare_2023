@@ -3,6 +3,7 @@ title: "R Notebook"
 output: html_notebook
 ---
 
+# Tutorial from 11/1
 ```{r}
 library(tidyverse)
 library(here)
@@ -60,3 +61,4 @@ hourly = c("apparent_temperature", "wind_speed_10m", "precipitation", "rain")
 ```
 
 
+Work from 11/3

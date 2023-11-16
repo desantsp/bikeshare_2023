@@ -1,0 +1,185 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+library(openmeteo)
+```
+
+# Loading bikeshare data
+```{r}
+df1=read_csv(here("data_raw","202309-capitalbikeshare-tripdata.csv"))
+```
+
+```{r}
+df2s=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("start"),ride_id) %>% 
+  mutate(start_stop="start") %>%
+  rename(t=started_at,
+         station_name=start_station_name,
+         station_id=start_station_id,
+         lat=start_lat,
+         lng=start_lng)
+```
+
+# Creating dataframe for ride ends
+```{r}
+df2e=df1 %>% 
+  select(rideable_type,member_casual,
+                    contains("end"),ride_id) %>% 
+  mutate(start_stop="stop") %>%
+  rename(t=ended_at,
+         station_name=end_station_name,
+         station_id=end_station_id,
+         lat=end_lat,
+         lng=end_lng)
+```
+
+# Merging rows of start and end dfs
+```{r}
+df2 = bind_rows(df2s, df2e)
+```
+
+
+```{r}
+df2 = df2 %>%
+  arrange(t) %>%
+  mutate(rider_delta =(start_stop == "start")*2-1) %>%
+  mutate(riders=cumsum(rider_delta)) %>%
+  relocate(t,start_stop,riders, .after = rideable_type)
+```
+
+```{r}
+df2 = force_tz(df2, tzone = "America/New_York")
+```
+
+```{r}
+df2 %>%
+  ggplot(aes(t,riders)) + geom_line() + ggtitle("Riders in September")
+```
+
+# Subsampled dataset
+```{r}
+df_s = df2 %>% slice_head(n = 1000)
+```
+
+```{r}
+df_e = df_s %>%
+  mutate(t_f = floor_date(t, "10 mins")) %>%
+  relocate(t_f, .after = t) %>%
+  slice_head(n = 1, by = t_f)
+```
+
+# Applying formula to entire dataset and reducing
+```{r}
+df_r=df2 |>
+  mutate(t_f=floor_date(t,"10 mins")) %>%
+  relocate(t_f,.after=t) %>%
+  slice_head(n=1,by=t_f)
+```
+
+```{r}
+p1=df2 %>% 
+  filter(day(t)==18) %>%
+  ggplot(aes(t,riders)) +
+  geom_line() +
+  ggtitle("Riders on 18Sep")
+```
+
+```{r}
+p1+
+  geom_line(data=df_r %>% filter(day(t)==18),
+  color="red")
+```
+
+# Spacing every 1 minute
+```{r}
+df_rb=df2 |>
+  mutate(t_f=floor_date(t,"1 mins")) %>%
+  relocate(t_f,.after=t) %>%
+  slice_head(n=1,by=t_f)
+
+```
+
+```{r}
+p3=df2 %>% 
+  filter(day(t)==18) %>%
+  ggplot(aes(t,riders)) +
+  geom_line() +
+  ggtitle("Riders on 18Sep")
+```
+
+```{r}
+p3+
+  geom_line(data=df_rb %>% filter(day(t)==18),
+  color="red")
+```
+
+# Start of Weather data manipulation
+```{r}
+df_w=weather_history("Washington",
+                    start = "2023-09-01",
+                    end = "2023-09-30",
+                    hourly = c("apparent_temperature",
+                               "wind_speed_10m",
+                               "precipitation")
+)
+```
+
+```{r}
+    df_sb=df2 %>% slice_sample(n=1000)
+```
+```{r}
+    df_j=df_sb %>% left_join(df_w,
+                        by=join_by(closest(t>=datetime)))
+```
+```{r}
+    df_j=df_sb %>% 
+  left_join(df_w,by=join_by(closest(t>=datetime)))  %>%
+  relocate(datetime, .after=t)
+head(df_j)
+```
+
+```{r}
+df_j$t[1:5]
+df_j$datetime[1:5]
+```
+# Start of 11/8 Class
+```{r}
+df2$t[1:5]
+force_tz(df2$t[1:5],"America/New_York")
+df2c=df2 %>% mutate(t=force_tz(t,tzone="America/New_York")) #corrected
+df_s2=df2c %>% slice_sample(n=1000)
+df_j2=df_s2 %>% 
+  left_join(df_w,by=join_by(closest(t>=datetime)))  %>%
+  relocate(datetime, .after=t)
+head(df_j2)
+```
+
+```{r}
+dfc = df2c %>%
+left_join(df_w, by=join_by(closest(t>=datetime))) %>%
+  relocate(datetime, .after = t) %>%
+  rename(atemp = hourly_apparent_temperature,
+         wind = hourly_wind_speed_10m,
+         prec = hourly_precipitation)
+```
+
+
+```{r}
+dfc %>%
+  ggplot(aes(t,atemp)) + geom_line() + ggtitle("Temperatures in September")
+```
+
+```{r}
+p2 = dfc %>%
+  filter(day(t) == 23) %>%
+  ggplot(aes(t,riders, color = wind)) + geom_point()
+p2
+```
+
