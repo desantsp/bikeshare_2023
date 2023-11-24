@@ -1,0 +1,22 @@
+---
+title: "Experiment 007: Visualizing Crime and Stations"
+name: "Sean DeSantis"
+output: html_notebook
+---
+
+
+```{r}
+library(tidyverse)
+library(janitor)
+library(here)
+library(gbfs)
+```
+
+```{r}
+dfc <- read_file(here("data_raw", "Crime_Incidents_in_2022.geojson"))
+```
+
+```{r}
+
+```
+
