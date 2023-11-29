@@ -1,0 +1,22 @@
+---
+title: "Intro to Data Science Final Project"
+author: "Lucas Adams, Ryan Miles-Ferguson, Sean DeSantis"
+output: html_notebook
+---
+
+```{r}
+library(knitr)
+library(tidyverse)
+library(janitor)
+library(here)
+library(sf)
+```
+
+```{r}
+bikshare=read_csv(here("data_raw","202309-capitalbikeshare-tripdata.csv"))
+```
+
+```{r}
+metro = st_read(here("data_raw", "Metro_Stations_Regional.geojson"))
+```
+
