@@ -35,6 +35,12 @@ bikeshare_j=bind_rows(bikeshare,metro)
 ```{r}
 plot(bikeshare_j)
 ```
+```{r}
+bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
+  OBJECTID <= 1000 ~ "Metro",
+  OBJECTID > 1000 ~ "Bikeshare"
+))
+```
 
 
 ```{r}
