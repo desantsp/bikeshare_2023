@@ -1,0 +1,42 @@
+---
+title: "Intro to Data Science Final Project"
+author: "Lucas Adams, Ryan Miles-Ferguson, Sean DeSantis"
+output: html_notebook
+---
+
+```{r}
+library(knitr)
+library(tidyverse)
+library(janitor)
+library(here)
+library(sf)
+```
+
+```{r}
+bikeshare=st_read(here("data_raw","Capital_Bikeshare_Locations.geojson"))
+```
+
+```{r}
+metro = st_read(here("data_raw", "Metro_Stations_Regional.geojson"))
+```
+```{r}
+plot(metro)
+```
+
+```{r}
+plot(bikeshare)
+```
+
+
+```{r}
+bikeshare_j=bind_rows(bikeshare,metro)
+```
+
+```{r}
+plot(bikeshare_j)
+```
+
+
+```{r}
+# I'm ging to create a graph on the Ridersip
+```
