@@ -25,7 +25,7 @@ plot(metro)
 
 
 ```{r}
-bikeshare_j=st_join(metro,bikeshare)
+bikeshare_j=left_join(metro,bikeshare %>% st_set_geometry(NULL))
 ```
 
 ```{r}
