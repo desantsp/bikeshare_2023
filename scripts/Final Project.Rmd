@@ -23,10 +23,19 @@ metro = st_read(here("data_raw", "Metro_Stations_Regional.geojson"))
 plot(metro)
 ```
 
+```{r}
+plot(bikeshare)
+```
+
 
 ```{r}
-bikeshare_j=left_join(metro,bikeshare %>% st_set_geometry(NULL))
+bikeshare_j=bind_rows(bikeshare,metro)
 ```
+
+```{r}
+plot(bikeshare_j)
+```
+
 
 ```{r}
 # I'm ging to create a graph on the Ridersip
