@@ -52,3 +52,6 @@ bikeshare_s = bikeshare_sf %>% slice_head(n=1000)
 bikeshare_j=st_join(metro,bikeshare_s)
 ```
 
+```{r}
+# I'm ging to create a graph on the Ridersip
+```
