@@ -13,12 +13,55 @@ library(sf)
 ```
 
 ```{r}
+df1 <- read_csv(here("data_raw", "202309-capitalbikeshare-tripdata.csv"))
+```
+# Creating new dataframe that takes out any rows with missing information
+```{r}
+df1b = na.omit(df1)
+```
+
+# Subtracting end time from start time and finding the values where the start time exceeds end time and filtering them out of the data set
+
+```{r}
+dfb = df1b %>%
+  mutate(ride_time = ended_at-started_at) %>%
+  arrange(ride_time) %>%
+  filter(ride_time>=0)
+  
+```
+
+# Combining timestamps into one column
+```{r}
+df2b = pivot_longer(dfb, cols = c("started_at", "ended_at"), values_to = "time")
+```
+
+# New Variable for Start and End
+```{r}
+df3b = df2b %>%
+  mutate(time_type = case_when(
+  time %in% df1b$started_at ~ "start",       
+  time %in% df1b$ended_at ~ "end",       
+  ))
+```
+
+# Counts how many times a bike started at a station
+```{r}
+df_count_start = df3b %>%
+  group_by(start_station_id, start_station_name, .drop = FALSE) %>%
+  count(time_type = "start", name = "bikes_start") 
+print(df_count_start)
+```
+
+# We'll pause with this for a minute, as we need to be able to map everything first. First, we are going to load in the data for the location of each metro station and bikeshare dock.
+```{r}
 bikeshare=st_read(here("data_raw","Capital_Bikeshare_Locations.geojson"))
 ```
 
 ```{r}
 metro = st_read(here("data_raw", "Metro_Stations_Regional.geojson"))
 ```
+
+# Now, we'll plot the data just to get a quick sense of what everything looks like.
 ```{r}
 plot(metro)
 ```
@@ -27,11 +70,12 @@ plot(metro)
 plot(bikeshare)
 ```
 
-
+# Next, we'll merge the location data to be able to effectively plot it.
 ```{r}
 bikeshare_j=bind_rows(bikeshare,metro)
 ```
 
+# When the data is merged, the station type (metro/bikeshare) is lost, so we'll use the OBJECTID to be able to identify each.
 ```{r}
 bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
   OBJECTID <= 1000 ~ "Metro",
@@ -39,8 +83,9 @@ bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
 ))
 ```
 
+# Now we will plot the location of each metro station and each bikeshare dock using the OpenStreetMap package.
 ```{r}
-ggplot(bikeshare_metro) + geom_sf(col = )
+ggplot(bikeshare_metro) + geom_sf()
 ```
 ```{r}
 #points = st_as_sf(bikeshare_sept2302, coords = c("start_lng", "start_lat"), crs = 4326)
@@ -80,9 +125,11 @@ plot(base_map)
 points = st_transform(points, osm())
 
 plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
-
 ```
 
+# Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
 ```{r}
-# I'm ging to create a graph on the Ridersip
+df_count_start %>% rename(NAME = start_station_name)
+bikeshare_squared = bind_col(bikeshare, df_count_start)
 ```
+
