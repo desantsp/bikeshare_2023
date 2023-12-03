@@ -13,7 +13,7 @@ library(sf)
 ```
 
 ```{r}
-bikeshare=read_csv(here("data_raw","202309-capitalbikeshare-tripdata.csv"))
+bikeshare=st_read(here("data_raw","Capital_Bikeshare_Locations.geojson"))
 ```
 
 ```{r}
@@ -23,33 +23,9 @@ metro = st_read(here("data_raw", "Metro_Stations_Regional.geojson"))
 plot(metro)
 ```
 
-```{r}
-points = st_as_sf(bikeshare, coords = c("start_lng", "start_lat"), crs = 4326)
-plot(st_geometry(points), pch = 16, col = "navy")
-```
 
 ```{r}
-library(OpenStreetMap)
-
-upperLeft = c(39.14, -77.4)
-
-lowerRight = c(38.75, -76.8)
-
-base_map  = openmap(upperLeft, lowerRight, type="osm")
-
-plot(base_map)
-
-points = st_transform(points, osm())
-
-plot(st_geometry(points), pch=16, col="navy", cex=0.5, add=T) 
-#plot(st_geometry(metro), pch = 16, col = "red", cex = 0.5, add = T)
-```
-
-```{r}
-bikeshare1 = na.omit(bikeshare)
-bikeshare_sf = st_as_sf(bikeshare1, coords = c("start_lng", "start_lat"), crs = 4326)
-bikeshare_s = bikeshare_sf %>% slice_head(n=1000)
-bikeshare_j=st_join(metro,bikeshare_s)
+bikeshare_j=st_join(metro,bikeshare)
 ```
 
 ```{r}
