@@ -52,6 +52,7 @@ df_count_start = df3b %>%
 print(df_count_start)
 ```
 
+
 # We'll pause with this for a minute, as we need to be able to map everything first. First, we are going to load in the data for the location of each metro station and bikeshare dock.
 ```{r}
 bikeshare=st_read(here("data_raw","Capital_Bikeshare_Locations.geojson"))
@@ -129,7 +130,7 @@ plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
 
 # Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
 ```{r}
-df_count_start %>% rename(NAME = start_station_name)
-bikeshare_squared = bind_col(bikeshare, df_count_start)
+bikeshare1 = st_as_sf(df_count_start, crs = 4326)
+bikeshare_squared = bind_rows(bikeshare, bikeshare1)
 ```
 
