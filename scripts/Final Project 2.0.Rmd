@@ -33,15 +33,55 @@ bikeshare_j=bind_rows(bikeshare,metro)
 ```
 
 ```{r}
-plot(bikeshare_j)
-```
-```{r}
 bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
   OBJECTID <= 1000 ~ "Metro",
   OBJECTID > 1000 ~ "Bikeshare"
 ))
 ```
 
+```{r}
+ggplot(bikeshare_metro) + geom_sf(col = )
+```
+```{r}
+#points = st_as_sf(bikeshare_sept2302, coords = c("start_lng", "start_lat"), crs = 4326)
+points = bikeshare_metro
+plot(st_geometry(points), pch = 16, col = "navy")
+```
+
+```{r}
+library(OpenStreetMap)
+
+upperLeft = c(39.12, -77.38)
+
+lowerRight = c(38.77, -76.86)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col="navy", cex=0.5, add=T)
+```
+
+```{r}
+palette = c("red", "black")
+
+names(palette) = unique(points$loc_type)
+
+upperLeft = c(39.13, -77.38)
+
+lowerRight = c(38.77, -76.84)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
+
+```
 
 ```{r}
 # I'm ging to create a graph on the Ridersip
