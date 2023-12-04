@@ -36,6 +36,48 @@ bikeshare_j=bind_rows(bikeshare,metro)
 plot(bikeshare_j)
 ```
 
+```{r}
+ggplot(bikeshare_metro) + geom_sf()
+```
+# Next, we will prep it for the map.
+```{r}
+points = bikeshare_metro
+plot(st_geometry(points), pch = 16, col = "navy")
+```
+# After that, we will plot it on the street map. 
+```{r}
+library(OpenStreetMap)
+
+upperLeft = c(39.12, -77.38)
+
+lowerRight = c(38.77, -76.86)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col="navy", cex=0.5, add=T)
+```
+
+```{r}
+palette = c("red", "black")
+
+names(palette) = unique(points$loc_type)
+
+upperLeft = c(39.13, -77.38)
+
+lowerRight = c(38.77, -76.84)
+
+base_map  = openmap(upperLeft, lowerRight, type="osm")
+
+plot(base_map)
+
+points = st_transform(points, osm())
+
+plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
+```
 
 ```{r}
 # I'm ging to create a graph on the Ridersip
