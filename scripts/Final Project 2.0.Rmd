@@ -85,58 +85,27 @@ bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
 ))
 ```
 
-# Now we will plot the location of each metro station and each bikeshare dock using the OpenStreetMap package. First, we will plot it without a background.
-```{r}
-ggplot(bikeshare_metro) + geom_sf()
-```
-# Next, we will prep it for the map.
-```{r}
-points = bikeshare_metro
-plot(st_geometry(points), pch = 16, col = "navy")
-```
-# After that, we will plot it on the street map. 
-```{r}
-library(OpenStreetMap)
-
-upperLeft = c(39.12, -77.38)
-
-lowerRight = c(38.77, -76.86)
-
-base_map  = openmap(upperLeft, lowerRight, type="osm")
-
-plot(base_map)
-
-points = st_transform(points, osm())
-
-plot(st_geometry(points), pch=16, col="navy", cex=0.5, add=T)
-```
-
-```{r}
-palette = c("red", "black")
-
-names(palette) = unique(points$loc_type)
-
-upperLeft = c(39.13, -77.38)
-
-lowerRight = c(38.77, -76.84)
-
-base_map  = openmap(upperLeft, lowerRight, type="osm")
-
-plot(base_map)
-
-points = st_transform(points, osm())
-
-plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
-```
-
+# Now we will plot the location of each metro station and each bikeshare dock using the tmap package.
 ```{r}
 tmap_mode("view")
-tm_shape(points) + tm_dots("loc_type")
+tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",size = 0.5)
 ```
 
 # Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
 ```{r}
-bikeshare1 = st_as_sf(df_count_start, crs = 4326)
-bikeshare_squared = bind_rows(bikeshare, bikeshare1)
+#df_count_start = df_count_start %>% rename(NAME = start_station_name)
+bikeshare_squared = left_join(bikeshare, df_count_start, by = "NAME")
+```
+
+```{r}
+bikeshare_squared2 = bikeshare_squared %>%
+  select(-STATION_STATUS, -GIS_ID)
+bikeshare_squared_b = na.omit(bikeshare_squared2)
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(bikeshare_squared_b) + tm_dots("NAME", legend.show = FALSE) + tm_text("bikes_start",size = 0.5)
+
 ```
 
