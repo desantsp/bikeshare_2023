@@ -88,12 +88,24 @@ bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
 # Now we will plot the location of each metro station and each bikeshare dock using the tmap package.
 ```{r}
 tmap_mode("view")
-tm_shape(bikeshare_metro) + tm_dots("loc_type")
+tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",size = 0.5)
 ```
 
 # Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
 ```{r}
-bikeshare1 = st_as_sf(df_count_start, crs = 4326)
-bikeshare_squared = bind_rows(bikeshare, bikeshare1)
+#df_count_start = df_count_start %>% rename(NAME = start_station_name)
+bikeshare_squared = left_join(bikeshare, df_count_start, by = "NAME")
+```
+
+```{r}
+bikeshare_squared2 = bikeshare_squared %>%
+  select(-STATION_STATUS, -GIS_ID)
+bikeshare_squared_b = na.omit(bikeshare_squared2)
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(bikeshare_squared_b) + tm_dots("NAME", legend.show = FALSE) + tm_text("bikes_start",size = 0.5)
+
 ```
 
