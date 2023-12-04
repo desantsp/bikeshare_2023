@@ -10,6 +10,7 @@ library(tidyverse)
 library(janitor)
 library(here)
 library(sf)
+library(tmap)
 ```
 
 ```{r}
@@ -84,16 +85,16 @@ bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
 ))
 ```
 
-# Now we will plot the location of each metro station and each bikeshare dock using the OpenStreetMap package.
+# Now we will plot the location of each metro station and each bikeshare dock using the OpenStreetMap package. First, we will plot it without a background.
 ```{r}
 ggplot(bikeshare_metro) + geom_sf()
 ```
+# Next, we will prep it for the map.
 ```{r}
-#points = st_as_sf(bikeshare_sept2302, coords = c("start_lng", "start_lat"), crs = 4326)
 points = bikeshare_metro
 plot(st_geometry(points), pch = 16, col = "navy")
 ```
-
+# After that, we will plot it on the street map. 
 ```{r}
 library(OpenStreetMap)
 
@@ -126,6 +127,11 @@ plot(base_map)
 points = st_transform(points, osm())
 
 plot(st_geometry(points), pch=16, col=palette[points$loc_type], cex=0.5, add=T)
+```
+
+```{r}
+tmap_mode("view")
+tm_shape(points) + tm_dots("loc_type")
 ```
 
 # Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
