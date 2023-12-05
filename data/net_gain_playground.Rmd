@@ -1,0 +1,86 @@
+---
+title: "Playing With net_gain"
+name: "Sean DeSantis"
+output: html_notebook
+---
+
+```{r}
+library(knitr)
+library(tidyverse)
+library(janitor)
+library(here)
+library(sf)
+library(tmap)
+```
+
+```{r}
+capital_bikeshare <- read_csv(here("data_raw", "202309-capitalbikeshare-tripdata.csv"))
+```
+# Creating new dataframe that takes out any rows with missing information
+```{r}
+capital_bikeshare_na = na.omit(capital_bikeshare)
+```
+
+# Subtracting end time from start time and finding the values where the start time exceeds end time and filtering them out of the data set
+
+```{r}
+capital_bikeshare_rt = capital_bikeshare_na %>%
+  mutate(ride_time = ended_at-started_at) %>%
+  arrange(ride_time) %>%
+  filter(ride_time>=0)
+  
+```
+
+# Combining timestamps into one column
+```{r}
+capital_bikeshare_rt2 = pivot_longer(capital_bikeshare_rt, cols = c("started_at", "ended_at"), values_to = "time")
+```
+
+# New Variable for Start and End
+```{r}
+capital_bikeshare_rt3 = capital_bikeshare_rt2 %>%
+  mutate(time_type = case_when(
+  time %in% capital_bikeshare_na$started_at ~ "start",       
+  time %in% capital_bikeshare_na$ended_at ~ "end",       
+  ))
+```
+
+# Counts how many times a bike started at a station
+```{r}
+bikeshare_rt_count_start = capital_bikeshare_rt3 %>%
+  group_by(start_station_id, start_station_name, .drop = FALSE) %>%
+  count(time_type = "start", name = "bikes_start") %>%
+print(bikeshare_rt_count_start)
+```
+
+# Counts how many times a bike ended at a station
+```{r}
+bikeshare_rt_count_end = capital_bikeshare_rt3 %>%
+  group_by(end_station_id, end_station_name, .drop = FALSE) %>%
+ count(time_type = "end", name = "bikes_end")
+
+print(bikeshare_rt_count_end)
+```
+
+# Combines counts into one dataframe and computes the net gain of bikes at a station
+```{r}
+bikeshare_rt_net_gain=bind_cols(bikeshare_rt_count_start,bikeshare_rt_count_end) %>%
+  mutate(net_gain = bikes_end - bikes_start) %>%
+arrange(net_gain) 
+
+print(bikeshare_rt_net_gain)
+```
+
+```{r}
+net_gain2 = select(.bikshare_rt_count_end, "bikes_end") %>%
+
+net_gain = bikeshare_rt_count_end$bikes_end - bikeshare_rt_count_start$bikes_start
+```
+
+```{r}
+bikeshare_rt_net_gain2 %>%
+  group_by(bikshare_rt_count_end$end_station_name, bikeshare_rt_count_start$start_station_name)
+  mutate(net_gain = bikeshare_rt_count_end$bikes_end - bikeshare_rt_count_start$bikes_start)
+```
+
+
