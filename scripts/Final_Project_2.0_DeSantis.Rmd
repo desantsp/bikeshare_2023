@@ -13,6 +13,7 @@ library(sf)
 library(tmap)
 ```
 
+# Loading Capital Bikeshare Data
 ```{r}
 capital_bikeshare <- read_csv(here("data_raw", "202309-capitalbikeshare-tripdata.csv"))
 ```
@@ -93,7 +94,7 @@ plot(bikeshare)
 bikeshare_j=bind_rows(bikeshare,metro)
 ```
 
-# When the data is merged, the station type (metro/bikeshare) is lost, so we'll use the OBJECTID to be able to identify each.
+# When the data is merged, the station type (metro/bikeshare) is lost, so we'll use the OBJECTID to be able to identify each as the numbers are quite distinct.
 ```{r}
 bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
   OBJECTID <= 1000 ~ "Metro",
@@ -101,7 +102,7 @@ bikeshare_metro = bikeshare_j %>% mutate(loc_type = case_when(
 ))
 ```
 
-# Now we will plot the location of each metro station and each bikeshare dock using the tmap package.
+# Now we will plot the location of each metro station and each bikeshare dock using the tmap package, showing the number of bikes available at the time the data was pulled.
 ```{r}
 tmap_mode("view")
 tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",size = 0.5)
@@ -113,7 +114,7 @@ tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",
 bikeshare_squared = left_join(bikeshare, bikeshare_rt_net_gain, by = "NAME")
 ```
 
-# Now we will remove the STATION_STATUS and GIS_ID variables, as they have a lot of empty data that will become problematic later if not removed.
+# Now we will remove the STATION_STATUS and GIS_ID variables, as they have a lot of empty data (NAs) that will become problematic later if not removed.
 ```{r}
 bikeshare_squared_b = bikeshare_squared  %>%
   select(-STATION_STATUS, -GIS_ID) %>% drop_na()
@@ -146,7 +147,9 @@ tmap_mode("view")
 tm_shape(bikeshare_metro_1000) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
 ```
 
-# Now let's see what happens with the stations with a negative net gain. We'll pretty much do the exact same thing as we did with the positive net gain stations, first filtering, then joining with the metro location data, then mutating to distinguish the bikeshare and metro stations, and finally plotting on a map.
+# Now let's see what happens with the stations with a negative net gain (more bikes being taken from than being returned to that station). We'll pretty much do the exact same thing as we did with the positive net gain stations, first filtering, then joining with the metro location data, then mutating to distinguish the bikeshare and metro stations, and finally plotting on a map.
+
+# As with the positive net gain stations, the negative net gain stations seem to also cluster around metro stations, for the most part. This also means that people are using bikes as last mile modes of transport from metro stations to their place of work or home.
 ```{r}
 bikeshare_net_negative = bikeshare_squared_b %>% filter(net_gain <= 0)
 bikeshare_metro_net_negative = bind_rows(bikeshare_net_negative, metro)
