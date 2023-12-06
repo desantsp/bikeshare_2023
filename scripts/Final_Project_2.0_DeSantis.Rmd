@@ -1,6 +1,6 @@
 ---
 title: "Intro to Data Science Final Project"
-author: "Lucas Adams, Ryan Miles-Ferguson, Sean DeSantis"
+author: "Andy Chen Lin, Lucas Adams, Ryan Miles-Ferguson, Sean DeSantis"
 output: html_notebook
 ---
 
