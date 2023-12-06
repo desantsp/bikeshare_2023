@@ -129,29 +129,29 @@ tm_shape(bikeshare_squared_b) + tm_dots("NAME", legend.show = FALSE) + tm_text("
 
 # Now we will filter the data to include only stations that have a positive net gain and plot them on a map.
 ```{r}
-bikeshare_1000 = bikeshare_squared_b %>% filter(net_gain >= 0)
+bikeshare_net_positive = bikeshare_squared_b %>% filter(net_gain > 0)
 tmap_mode("view")
-tm_shape(bikeshare_1000) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
+tm_shape(bikeshare_net_positive) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
 ```
 
 # To get a better sense of where these are, we will merge the location data of the net positive stations with the metro location data. We will use the same OBJECT_ID trick to distinguish the metro and bikeshare stations and then plot the stations using tmap. We also decided to display the actual net gain for each bikeshare station for comprehensiveness.
 
 # As can be seen in the map, the majority of the net positive stations are relatively close to metro stations. This means that it is likely that people are using bikes to get close to metro stations and then using the metro for the rest of their journey home. 
 ```{r}
-bikeshare_metro_1000 = bind_rows(bikeshare_1000, metro)
-bikeshare_metro_1000 = bikeshare_metro_1000 %>% mutate(loc_type = case_when(
+bikeshare_metro_positive = bind_rows(bikeshare_net_positive, metro)
+bikeshare_metro_positive = bikeshare_metro_positive %>% mutate(loc_type = case_when(
   OBJECTID <= 1000 ~ "Metro",
   OBJECTID > 1000 ~ "Bikeshare"
 ))
 tmap_mode("view")
-tm_shape(bikeshare_metro_1000) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
+tm_shape(bikeshare_metro_positive) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
 ```
 
 # Now let's see what happens with the stations with a negative net gain (more bikes being taken from than being returned to that station). We'll pretty much do the exact same thing as we did with the positive net gain stations, first filtering, then joining with the metro location data, then mutating to distinguish the bikeshare and metro stations, and finally plotting on a map.
 
 # As with the positive net gain stations, the negative net gain stations seem to also cluster around metro stations, for the most part. This also means that people are using bikes as last mile modes of transport from metro stations to their place of work or home.
 ```{r}
-bikeshare_net_negative = bikeshare_squared_b %>% filter(net_gain <= 0)
+bikeshare_net_negative = bikeshare_squared_b %>% filter(net_gain < 0)
 bikeshare_metro_net_negative = bind_rows(bikeshare_net_negative, metro)
 bikeshare_metro_net_negative = bikeshare_metro_net_negative %>% mutate(loc_type = case_when(
   OBJECTID <= 1000 ~ "Metro",
@@ -161,3 +161,24 @@ tmap_mode("view")
 tm_shape(bikeshare_metro_net_negative) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
 ```
 
+# This seems all well and good, but there are a lot of stations where the net gain is very close to zero. As such, the data loses a bit of meaning. To strengthen our analysis, let's look at the stations where the net gain (both positive and negative) are more significant. The threshold we'll use is +/- 20, as this is a significant delta but still gives us a lot of data points to work with.
+
+# To do this, we'll use the same procedure as before with the net positive and net negative stations, albeit with a one additional step. First, we'll filter our holistic bikeshare data by the stations with a net gain of -20 and then positive 20. Then, we'll include the additional step of binding these filtered datasets together. After that, we'll proceed as normal, binding it with the metro location data, distinguishing the metro and bikeshare stations by OBJECTID, and plotting using tmap.
+
+```{r}
+bikeshare_neg_20 = bikeshare_squared_b %>% filter(net_gain <= -20)
+bikeshare_pos_20 = bikeshare_squared_b %>% filter(net_gain >= 20)
+bikeshare_20 = bind_rows(bikeshare_neg_20, bikeshare_pos_20)
+bikeshare_metro_20 = bind_rows(bikeshare_20, metro)
+bikeshare_metro_20 = bikeshare_metro_20 %>% mutate(loc_type = case_when(
+  OBJECTID <= 1000 ~ "Metro",
+  OBJECTID > 1000 ~ "Bikeshare"
+))
+tmap_mode("view")
+tm_shape(bikeshare_metro_20) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
+
+```
+
+# The results are quite interesting. There appear to be many bikeshare stations that do indeed appear quite close to a metro station. However, there are also appear to be stations that aren't as close to a metro station, particularly around Arlington and Georgetown. The majority of the bikeshare stations here are concentrated in the center of the city which appears to confirm our hypothesis about last mile transportation. However, the stations that have a significant net gain and aren't in the city center do tend to have a metro station nearby, which is quite telling. This is shown clearly at Alexandria, Tyson's, Bethesda, and Silver Spring.
+
+# The full results of our research have produced some interesting results. However, it does appear that where metro stations are, bikeshare stations with a lot of use tend to follow. As such, it is the recommendation of this group that in order to increase ridership, more bikes and bikeshare stations should be allocated to areas close to metro stations as shown in the map immediately above, as more bikes will solve the net gain problem and resulting opportunity cost.
