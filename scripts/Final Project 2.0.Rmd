@@ -107,7 +107,7 @@ tmap_mode("view")
 tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",size = 0.5)
 ```
 
-# Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only.
+# Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only. Note that line 112 should only be run once on program start and then commented out.
 ```{r}
 #df4b = df4b %>% rename(NAME = start_station_name)
 bikeshare_squared = left_join(bikeshare, df4b, by = "NAME")
@@ -121,7 +121,7 @@ bikeshare_squared_b = bikeshare_squared  %>%
 
 ```{r}
 tmap_mode("view")
-tm_shape(bikeshare_squared_b) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
+tm_shape(bikeshare_squared) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
 ```
 
 ```{r}
