@@ -126,13 +126,16 @@ tmap_mode("view")
 tm_shape(bikeshare_squared_b) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
 ```
 
-
+# Now we will filter the data to include only stations that have a positive net gain and plot them on a map.
 ```{r}
 bikeshare_1000 = bikeshare_squared_b %>% filter(net_gain >= 0)
 tmap_mode("view")
 tm_shape(bikeshare_1000) + tm_dots("NAME", legend.show = FALSE) + tm_text("net_gain",size = 0.5)
 ```
 
+# To get a better sense of where these are, we will merge the location data of the net positive stations with the metro location data. We will use the same OBJECT_ID trick to distinguish the metro and bikeshare stations and then plot the stations using tmap. We also decided to display the actual net gain for each bikeshare station for comprehensiveness.
+
+# As can be seen in the map, the majority of the net positive stations are relatively close to metro stations. This means that it is likely that people are using bikes to get close to metro stations and then using the metro for the rest of their journey home. 
 ```{r}
 bikeshare_metro_1000 = bind_rows(bikeshare_1000, metro)
 bikeshare_metro_1000 = bikeshare_metro_1000 %>% mutate(loc_type = case_when(
@@ -140,9 +143,10 @@ bikeshare_metro_1000 = bikeshare_metro_1000 %>% mutate(loc_type = case_when(
   OBJECTID > 1000 ~ "Bikeshare"
 ))
 tmap_mode("view")
-tm_shape(bikeshare_metro_1000) + tm_dots("loc_type") + tm_text("net_gain")
+tm_shape(bikeshare_metro_1000) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
 ```
 
+# Now let's see what happens with the stations with a negative net gain. We'll pretty much do the exact same thing as we did with the positive net gain stations, first filtering, then joining with the metro location data, then mutating to distinguish the bikeshare and metro stations, and finally plotting on a map.
 ```{r}
 bikeshare_net_negative = bikeshare_squared_b %>% filter(net_gain <= 0)
 bikeshare_metro_net_negative = bind_rows(bikeshare_net_negative, metro)
@@ -151,6 +155,6 @@ bikeshare_metro_net_negative = bikeshare_metro_net_negative %>% mutate(loc_type 
   OBJECTID > 1000 ~ "Bikeshare"
 ))
 tmap_mode("view")
-tm_shape(bikeshare_metro_net_negative) + tm_dots("loc_type") + tm_text("net_gain")
+tm_shape(bikeshare_metro_net_negative) + tm_dots("loc_type") + tm_text("net_gain", size = 0.5)
 ```
 
