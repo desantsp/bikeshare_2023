@@ -121,7 +121,6 @@ bikeshare_squared = left_join(bikeshare, bikeshare_rt_net_gain, by = "NAME")
 ```{r}
 bikeshare_squared_b = bikeshare_squared  %>%
   select(-STATION_STATUS, -GIS_ID) %>% drop_na()
-#bikeshare_squared_b = na.omit(bikeshare_squared2)
 ```
 
 # Now we will create a plot that plots every metro station with the net gain of bikes that it has using tmap.
