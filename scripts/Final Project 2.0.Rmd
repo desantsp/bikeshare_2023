@@ -141,3 +141,17 @@ tm_shape(bikeshare_metro_1000) + tm_dots("loc_type")
 
 ```
 
+How active was the Rider on a day-to-day basis?
+```{r}
+library(tidyr)
+library(tidyverse)
+# Create a table with just the datetime stamp
+dfb_time = dfb |> select(started_at)
+dfb_time2 = separate(dfb_time, col=started_at, into=c("day","time"), sep= " ")
+dfb_time3 = separate(dfb_time2, col=day, into=c("year", "month", "day"), sep="-")
+dfb_time4 = dfb_time3 |> count(day)
+
+ggplot(dfb_time4, aes(x=day, y=n)) + geom_point() + ggtitle("Number of Riders per")
+        
+```
+Base on the graph shown above, we can see that on 09/23. We experience the lowest Ridership where under 4,000 active Riders. This is the outliner on the graph, because our second lowest is 8,000 and on the day after this. Which is 09/24. This is interesting because how did the Ridership drop so much in such little time. What factors can lead to this result? Could this be weather, holidays that happen this is day?
