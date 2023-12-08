@@ -1,7 +1,10 @@
 ---
 title: "Intro to Data Science Final Project"
 author: "Andy Chen Lin, Lucas Adams, Ryan Miles-Ferguson, Sean DeSantis"
-output: html_notebook
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
 ---
 
 ```{r}
@@ -110,7 +113,7 @@ tm_shape(bikeshare_metro) + tm_dots("loc_type") + tm_text("NUM_BIKES_AVAILABLE",
 
 # Now that we have a good idea of where the stations are, we'll join the ridership data for each bikeshare station with the location data for the bikeshare data only. Note that the join is based on "NAME" so we had to rename start station name in the ridership data. This is represented in line 112, which only needs to be ran once and then can be commented out.
 ```{r}
-#bikeshare_rt_net_gain = bikeshare_rt_net_gain %>% rename(NAME = start_station_name)
+bikeshare_rt_net_gain = bikeshare_rt_net_gain %>% rename(NAME = start_station_name)
 bikeshare_squared = left_join(bikeshare, bikeshare_rt_net_gain, by = "NAME")
 ```
 
