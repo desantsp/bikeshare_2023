@@ -181,6 +181,21 @@ tm_shape(bikeshare_metro_20) + tm_dots("loc_type") + tm_text("net_gain", size = 
 
 ```
 
+#How active was the Rider on a day-to-day basis?
+```{r}
+library(tidyr)
+library(tidyverse)
+# Create a table with just the datetime stamp
+dfb_time = dfb |> select(started_at)
+dfb_time2 = separate(dfb_time, col=started_at, into=c("day","time"), sep= " ")
+dfb_time3 = separate(dfb_time2, col=day, into=c("year", "month", "day"), sep="-")
+dfb_time4 = dfb_time3 |> count(day)
+
+ggplot(dfb_time4, aes(x=day, y=n)) + geom_point() + ggtitle("Number of Riders per")
+        
+```
+Base on the graph shown above, we can see that on 09/23. We experience the lowest Ridership where under 4,000 active Riders. This is the outliner on the graph, because our second lowest is 8,000 and on the day after this. Which is 09/24. This is interesting because how did the Ridership drop so much in such little time. What factors can lead to this result? Could this be weather, holidays that happen this is day?
+
 # The results are quite interesting. There appear to be many bikeshare stations that do indeed appear quite close to a metro station. However, there are also appear to be stations that aren't as close to a metro station, particularly around Arlington and Georgetown. The majority of the bikeshare stations here are concentrated in the center of the city which appears to confirm our hypothesis about last mile transportation. However, the stations that have a significant net gain and aren't in the city center do tend to have a metro station nearby, which is quite telling. This is shown clearly at Alexandria, Tyson's, Bethesda, and Silver Spring.
 
 # The full results of our research have produced some interesting results. However, it does appear that where metro stations are, bikeshare stations with a lot of use tend to follow. As such, it is the recommendation of this group that in order to increase ridership, more bikes and bikeshare stations should be allocated to areas close to metro stations as shown in the map immediately above, as more bikes will solve the net gain problem and resulting opportunity cost.
