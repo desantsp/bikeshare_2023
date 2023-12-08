@@ -165,7 +165,7 @@ tm_shape(bikeshare_metro_net_negative) + tm_dots("loc_type") + tm_text("net_gain
 
 # This seems all well and good, but there are a lot of stations where the net gain is very close to zero. As such, the data loses a bit of meaning. To strengthen our analysis, let's look at the stations where the net gain (both positive and negative) are more significant. The threshold we'll use is +/- 20, as this is a significant delta but still gives us a lot of data points to work with.
 
-# To do this, we'll use the same procedure as before with the net positive and net negative stations, albeit with a one additional step. First, we'll filter our holistic bikeshare data by the stations with a net gain of -20 and then positive 20. Then, we'll include the additional step of binding these filtered datasets together. After that, we'll proceed as normal, binding it with the metro location data, distinguishing the metro and bikeshare stations by OBJECTID, and plotting using tmap.
+# To do this, we'll use the same procedure as before with the net positive and net negative stations, albeit with one additional step. First, we'll filter our holistic bikeshare data by the stations with a net gain of -20 and then positive 20. Then, we'll include the additional step of binding these filtered datasets together. After that, we'll proceed as normal, binding it with the metro location data, distinguishing the metro and bikeshare stations by OBJECTID, and plotting using tmap.
 
 ```{r}
 bikeshare_neg_20 = bikeshare_squared_b %>% filter(net_gain <= -20)
